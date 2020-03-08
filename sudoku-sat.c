@@ -90,9 +90,10 @@ static int fput_index(FILE* fp, int n, index_t i);
 // fixed number gives powerful constraint.
 int write_specific_constraint(FILE* fp, int col, const int sudoku[N * N]) {
   for (int i = 0; i < N * N; i += 1) {
-    const int n = sudoku[i];
-    if (0 < n && n <= N) {
-      col = fput_index(fp, col, index_of(i / N, i % N, n - 1));
+    const unsigned n = sudoku[i];
+    if (n - 1 < N) {
+      predicate_t pred = {.row = i / N, .col = i % N, .num = n - 1};
+      col = fput_index(fp, col, index_of(pred));
       col = fput_index(fp, col, 0);
     }
   }
@@ -183,7 +184,8 @@ static indices_t make_indeices(void* cookie, index_t (*calculate)(void*, int)) {
 }
 
 static index_t calculate_num(void* cookie, int i) {
-  return index_of(((int*)cookie)[0], ((int*)cookie)[1], i);
+  return index_of((predicate_t){
+      .row = ((int*)cookie)[0], .col = ((int*)cookie)[1], .num = i});
 }
 
 indices_t cell_for(int row, int col) {
@@ -191,7 +193,8 @@ indices_t cell_for(int row, int col) {
 }
 
 static index_t calculate_row(void* cookie, int i) {
-  return index_of(((int*)cookie)[0], i, ((int*)cookie)[1]);
+  return index_of((predicate_t){
+      .row = ((int*)cookie)[0], .col = i, .num = ((int*)cookie)[1]});
 }
 
 indices_t row_for(int row, int num) {
@@ -199,7 +202,8 @@ indices_t row_for(int row, int num) {
 }
 
 static index_t calculate_col(void* cookie, int i) {
-  return index_of(i, ((int*)cookie)[0], ((int*)cookie)[1]);
+  return index_of((predicate_t){
+      .row = i, .col = ((int*)cookie)[0], .num = ((int*)cookie)[1]});
 }
 
 indices_t col_for(int col, int num) {
@@ -209,7 +213,8 @@ indices_t col_for(int col, int num) {
 static index_t calculate_box(void* cookie, int i) {
   const int* params = (int*)cookie;
   const int n = params[3];
-  return index_of(params[0] + i / n, params[1] + i % n, params[2]);
+  return index_of((predicate_t){
+      .row = params[0] + i / n, .col = params[1] + i % n, .num = params[2]});
 }
 
 indices_t box_for(int box, int num) {
