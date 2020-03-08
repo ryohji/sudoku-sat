@@ -158,37 +158,48 @@ int at_most_one_of(FILE* fp, indices_t indices, int n) {
   return n;
 }
 
-indices_t num_for(int row, int col) {
+static indices_t make_indeices(void* cookie, index_t (*calculate)(void*, int)) {
   indices_t v;
-  for (int num = 0; num < N; num += 1) {
-    v.index[num] = index_of(row, col, num);
+  for (int i = 0; i < N; i += 1) {
+    v.index[i] = calculate(cookie, i);
   }
   return v;
+}
+
+static index_t calculate_num(void* cookie, int i) {
+  return index_of(((int*)cookie)[0], ((int*)cookie)[1], i);
+}
+
+indices_t num_for(int row, int col) {
+  return make_indeices((int[2]){row, col}, calculate_num);
+}
+
+static index_t calculate_row(void* cookie, int i) {
+  return index_of(((int*)cookie)[0], i, ((int*)cookie)[1]);
 }
 
 indices_t row_for(int row, int num) {
-  indices_t v;
-  for (int col = 0; col < N; col += 1) {
-    v.index[col] = index_of(row, col, num);
-  }
-  return v;
+  return make_indeices((int[2]){row, num}, calculate_row);
+}
+
+static index_t calculate_col(void* cookie, int i) {
+  return index_of(i, ((int*)cookie)[0], ((int*)cookie)[1]);
 }
 
 indices_t col_for(int col, int num) {
-  indices_t v;
-  for (int row = 0; row < N; row += 1) {
-    v.index[row] = index_of(row, col, num);
-  }
-  return v;
+  return make_indeices((int[2]){col, num}, calculate_row);
+}
+
+static index_t calculate_box(void* cookie, int i) {
+  const int* params = (int*)cookie;
+  const int n = params[3];
+  return index_of(params[0] + i / n, params[1] + i % n, params[2]);
 }
 
 indices_t box_for(int box, int num) {
-  indices_t v;
   const int n = (int)sqrt(N);
-  for (int i = 0; i < N; i += 1) {
-    v.index[i] = index_of(box / n * n + i / n, box % n * n + i % n, num);
-  }
-  return v;
+  return make_indeices((int[4]){box / n * n, box % n * n, num, n},
+                       calculate_box);
 }
 
 static char* make_format();
