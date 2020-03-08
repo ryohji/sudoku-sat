@@ -5,6 +5,7 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 
 #define nC2 (N * (N - 1) / 2)
 
@@ -190,9 +191,14 @@ indices_t box_for(int box, int num) {
   return v;
 }
 
+static char* make_format();
+static char* refer_format();
+static char format_[16];
+static char* (*format)() = make_format;
+
 int fput_index(FILE* fp, index_t i, int col) {
   char s[16];
-  int n = sprintf(s, "%d", i);
+  int n = sprintf(s, format(), i);
   if (col != 0) {
     int c;
     if (col + 1 + n > LINE_WIDTH) {
@@ -205,4 +211,15 @@ int fput_index(FILE* fp, index_t i, int col) {
   }
   fputs(s, fp);
   return n;
+}
+
+char* make_format() {
+  format = refer_format;
+  sprintf(format_, "%d", -N * N * N);
+  sprintf(format_, "%%%lud", strlen(format_));
+  return format_;
+}
+
+char* refer_format() {
+  return format_;
 }
