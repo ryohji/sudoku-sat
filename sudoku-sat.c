@@ -207,7 +207,7 @@ static index_t calculate_col(void* cookie, int i) {
 }
 
 indices_t col_for(int col, int num) {
-  return make_indices((int[2]){col, num}, calculate_row);
+  return make_indices((int[2]){col, num}, calculate_col);
 }
 
 static index_t calculate_box(void* cookie, int i) {
