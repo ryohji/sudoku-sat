@@ -29,6 +29,7 @@ static int* read_sudoku(FILE* fp, int sudoku[N * N]);
 /** count the number of constraints of specified sudoku */
 static int count_constraint(const int sudoku[N * N]);
 
+static void write_comment(FILE* fp, const int sudoku[N * N]);
 /**
  * convert specified sudoku to the constraint into specified FILE
  *
@@ -49,6 +50,8 @@ static int write_generic_constraint(FILE* fp, int n);
  */
 int main() {
   const int* sudoku = read_sudoku(stdin, (int[N * N]){0});
+
+  write_comment(stdout, sudoku);
 
   // output DIMACS problem definition line
   fprintf(stdout, "p cnf %d %d\n", N * N * N,
@@ -76,6 +79,26 @@ int* read_sudoku(FILE* fp, int buffer[N * N]) {
 /*
  writer part
  */
+void write_comment(FILE* fp, const int sudoku[N * N]) {
+  char format[32];
+  sprintf(format, "%d", N);
+  sprintf(format, "%%s%%%lud%%c", strlen(format));
+
+  fputs("c SUDOKU DIMACS\n", fp);
+  fputs("c\n", fp);
+  for (int i = 0; i < N * N; i += 1) {
+    fprintf(fp, format, i % N ? "" : "c ", sudoku[i], (i + 1) % N ? ' ' : '\n');
+  }
+  fputs("c\n", fp);
+  fputs("c In DIMACS below, variable index i stands for:\n", fp);
+  fprintf(fp,
+          "c   the number           `(i - 1) / %d / %d %% %d + 1`\n"
+          "c   placed at the column `(i - 1) %% %d + 1`\n"
+          "c   of the row           `(i - 1) / %d %% %d + 1`.\n",
+          N, N, N, N, N, N);
+  fputs("c\n", fp);
+}
+
 int count_constraint(const int buffer[N * N]) {
   int n = 0;
   for (const int* p = buffer; p != buffer + N * N; p += 1) {
