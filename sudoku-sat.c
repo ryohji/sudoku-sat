@@ -175,7 +175,7 @@ int at_most_one_of(FILE* fp, int n, indices_t indices) {
   return n;
 }
 
-static indices_t make_indeices(void* cookie, index_t (*calculate)(void*, int)) {
+static indices_t make_indices(void* cookie, index_t (*calculate)(void*, int)) {
   indices_t v;
   for (int i = 0; i < N; i += 1) {
     v.index[i] = calculate(cookie, i);
@@ -189,7 +189,7 @@ static index_t calculate_num(void* cookie, int i) {
 }
 
 indices_t cell_for(int row, int col) {
-  return make_indeices((int[2]){row, col}, calculate_num);
+  return make_indices((int[2]){row, col}, calculate_num);
 }
 
 static index_t calculate_row(void* cookie, int i) {
@@ -198,7 +198,7 @@ static index_t calculate_row(void* cookie, int i) {
 }
 
 indices_t row_for(int row, int num) {
-  return make_indeices((int[2]){row, num}, calculate_row);
+  return make_indices((int[2]){row, num}, calculate_row);
 }
 
 static index_t calculate_col(void* cookie, int i) {
@@ -207,7 +207,7 @@ static index_t calculate_col(void* cookie, int i) {
 }
 
 indices_t col_for(int col, int num) {
-  return make_indeices((int[2]){col, num}, calculate_row);
+  return make_indices((int[2]){col, num}, calculate_row);
 }
 
 static index_t calculate_box(void* cookie, int i) {
@@ -219,8 +219,8 @@ static index_t calculate_box(void* cookie, int i) {
 
 indices_t box_for(int box, int num) {
   const int n = (int)sqrt(N);
-  return make_indeices((int[4]){box / n * n, box % n * n, num, n},
-                       calculate_box);
+  return make_indices((int[4]){box / n * n, box % n * n, num, n},
+                      calculate_box);
 }
 
 int fput_index(FILE* fp, int col, index_t i) {
